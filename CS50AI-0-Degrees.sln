@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CS50AI-0-Degrees", "CS50AI-0-Degrees\CS50AI-0-Degrees.pyproj", "{72D7041B-97AE-46EA-A092-46ABA30D3A43}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72D7041B-97AE-46EA-A092-46ABA30D3A43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72D7041B-97AE-46EA-A092-46ABA30D3A43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F748E5E2-3A5B-44E0-ABAB-53428D34713A}
+	EndGlobalSection
+EndGlobal
