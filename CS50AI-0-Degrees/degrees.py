@@ -1,5 +1,7 @@
 import csv
 import sys
+import pprint
+import logging
 
 from util import Node, StackFrontier, QueueFrontier
 
@@ -53,10 +55,17 @@ def load_data(directory):
 
 
 def main():
+    logger = logging.getLogger("BFS")
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
     if len(sys.argv) > 2:
         sys.exit("Usage: python degrees.py [directory]")
     directory = sys.argv[1] if len(sys.argv) == 2 else "large"
-    directory = "small"
     # Load data from files into memory
     print("Loading data...")
     load_data(directory)
@@ -69,7 +78,7 @@ def main():
     if target is None:
         sys.exit("Person not found.")
 
-    path = shortest_path(source, target)
+    path = shortest_path(source, target, logger)
 
     if path is None:
         print("Not connected.")
@@ -84,31 +93,95 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
-def shortest_path(source, target):
+def shortest_path(source, target, logger):
     """
     Returns the shortest list of (movie_id, person_id) pairs
     that connect the source to the target.
 
     If no possible path, returns None.
     """
-    #source
+    #state - table [movie, actorId]
+    #action - list of states
     frontier = QueueFrontier()
-    action = neighbors_for_person(source)
-    for i in action:
-        tempNode = Node(i, (None, source), neighbours_for_person(i[1]))
-        frontier.add(temptNode)
-    currentNode = frontier.remove()
-    if source is target:
-        return [("104257", target)]
+    exploredSet = []
     
-    #initialNode = Node(currentState, parentState, action)
-    #frontier.add(initialNode)
+    #create initial nodes
+    action = neighbors_for_person(source)
+    #logger.debug("List of actions for node %s : %s", str(source), str(action))
+    sourceNode = Node((None, source), None, action)
+    createNodesFromAction(action, sourceNode, exploredSet, frontier, logger)
+    
 
-    #currentNode = frontier.remove()
-    #if 
+    while True:
+        currentNode = frontier.remove()
+        #logger.info("===Node removed from frontier %s", len(frontier.frontier))
+        #logger.debug("%s ", repr(frontier) )
 
-    # TODO
-    raise NotImplementedError
+        if checkIfNodeContainsTarget(currentNode, target ,logger ):
+            break
+        exploredSet.append(currentNode)
+        #logger.info("===Status of explored set changed %s", len(exploredSet) )
+        #logger.debug("%s ", repr(exploredSet) )
+        createNodesFromAction(currentNode.action, currentNode, exploredSet, frontier, logger)
+        #logger.info("===Status of the frontier after expanding node  %s", len(frontier.frontier))
+        #logger.debug("%s ", repr(frontier) )
+        if not frontier:
+            return None
+
+    path = list(reversed(createPath(currentNode, source)))
+    return path
+
+
+def createPath(node, source):
+    path = []
+    tempNode = node
+    while tempNode.state[1] != source :
+        path.append(tempNode.state)
+        tempNode= tempNode.parent
+    return path
+
+def checkIfFrontierIsEmpty(frontier):
+    if not frontier:
+        return True
+    else:
+        return False
+
+def checkIfNodeContainsTarget(node, target,logger ):
+    if node.state[1] == target:
+        #logger.debug("===status True contains target compare %s %s", node.state[1], target)
+        return True
+    else:
+        #logger.debug("===status False contains target compare %s %s", node.state[1], target)
+        return False
+
+    
+#checking the neighbour movies is based on the personId, no need to worry about multiple films
+
+def checkIfNodeIsInExploredSet(node, exploredSet):
+    #no need to remove node from action, it will be just ignored using check
+    actorId = node.state[1]
+    for tempNode in exploredSet:
+        if tempNode.state[1] == actorId:
+            return True
+    return False
+
+def checkIfStateIsInExploredSet(state, exploredSet, logger):
+    #role is table [movie, actorId]
+    #no need to remove node from action, it will be just ignored using check
+    for tempNode in exploredSet:
+        if tempNode.state[1] == state[1]:
+            #logger.debug("===status of true compare %s %s", tempNode.state[1], state[1])
+            return True
+    return False
+
+
+def createNodesFromAction(action, parent, exploredSet, frontier, logger):
+    #create node from action and add it to frontier
+    for state in action:
+        if not checkIfStateIsInExploredSet(state, exploredSet, logger):
+            tempNode = Node(state, parent, neighbors_for_person(state[1]))
+            frontier.add(tempNode)
+
 
 
 def person_id_for_name(name):
